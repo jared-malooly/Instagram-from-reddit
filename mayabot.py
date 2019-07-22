@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import urllib.request
-import random
 
 def main():
     r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
