@@ -1,3 +1,10 @@
+###
+### For Maya:
+### Parses out the important stuff from your posts, and assigns them to a dictonary to be downloaded and posted
+### to instagram
+###
+
+
 import praw
 from bs4 import BeautifulSoup
 import requests
