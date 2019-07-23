@@ -5,9 +5,10 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import urllib.request
+import os
 
 def main():
-    username = 'AbleHoney'
+    username = 'mayabot'
     r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
                     client_secret = 'BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username = 'Mayabot',
@@ -16,6 +17,11 @@ def main():
 
     user = r.redditor(username)
     get_post_ids(user, r)
+
+    #DM maya update
+    #instagram post
+    #DM maya posted and link to post
+    #DM maya remove?
 
 def get_post_ids(user, r):
     '''
@@ -53,7 +59,13 @@ def get_post_ids(user, r):
                 #SHOULD key out duplicate posts!
                 new_posts[title] = [link_to_image, id]
             except:
-                print(submission, "is not a supported file type or the post may be removed.")
+                #Is it a video or gif?
+                try:
+                    title, link_to_image, id = get_video(submission.id, submission.title)
+
+                #Removed/unavailable
+                except:
+                    print('Video or image may be removed or invalid.')
     if post_ids == []:
         print('All posts accounted for!')
 
@@ -70,8 +82,8 @@ def get_post_ids(user, r):
             imgur_download(new_posts, key)
         elif 'v.redd.it' in type:
             vreddit_download(new_posts, key)
-        else:
-            print(type)
+        elif 'gallery' in type:
+            extract_gallery(new_posts, key)
 
     used_ids_txt.close()
 
@@ -91,11 +103,55 @@ def get_image(id, title):
         possible_link = (link['href'])
         possible_link = possible_link.split('/')
         for i in possible_link:
-            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "i.redd.it" or i == "v.redd.it":
-                if i == "v.redd.it":
+            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "blob:https:" or i == "v.redd.it":
+                if i == "blob:https:":
                     print(link, "is v.redd.it")
-
+                    return title, "/".join(possible_link), id
+            if i == "gallery":
                 return title, "/".join(possible_link), id
+
+def get_video(id, title):
+    print(id, title)
+
+    #
+
+def extract_gallery(new_posts, key):
+    '''
+    Creates a folder to extract all images from an imgur gallery to. Also updates img_and_caption.txt
+
+    new_posts: dictionary containing caption, image id, and link
+    key: finds the correct picture/caption within the dictionary
+    '''
+
+    url = new_posts[key][0]
+    web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
+    data = web_request.text
+    soup = BeautifulSoup(data, "html.parser")
+    folder_name = new_posts[key][1]
+
+    # create directory for extraction
+    try:
+        os.mkdir('pics/' + folder_name)
+    except:
+        print("Folder already exists dummy")
+
+    for link in soup.find_all("div", class_="post-image-container"):
+        try:
+            possible_link = (link['id'])
+            id = possible_link
+            link = 'https://imgur.com/' + id +'/'
+            name = id + '.jpg'
+            caption = key
+
+            urllib.request.urlretrieve(link, 'pics/' + folder_name + '/' + name)
+        except Exception as e:
+            print(e)
+
+    to_upload = open("img_and_caption.txt", "a")
+    to_upload.write(caption + ' | ' + folder_name + ' | ' + "GALLERY" + "\n")
+    to_upload.close()
+
+
 
 def gfycat_download(new_posts, key):
     pass #Gfycat is stupid anyway i'll figure out its API later
@@ -104,10 +160,11 @@ def imgur_download(new_posts, key):
     '''
     downloads **image** from imgur and stores in pics folder
     Also adds to captions list file so we post with the same caption as the picture
+
     new_posts: dictionary containing caption, image id, and link
     key: finds the correct picture/caption within the dictionary
     '''
-    
+
     link = new_posts[key][0]
     name = new_posts[key][1] + '.jpg'
     caption = key
@@ -135,5 +192,8 @@ def ireddit_download(new_posts, key):
     to_upload = open("img_and_caption.txt", "a")
     to_upload.write(caption + ' | ' + name + "\n")
     to_upload.close()
+
+def vreddit_download(new_posts, key):
+    print(new_posts)
 
 main()
