@@ -1,6 +1,7 @@
 ###
 ### For Maya, thanks for the project
 ###
+### By Jared Malooly
 ### This script finds the source of the images hosted by imgur, i.redd.it, v.redd.it, and gfycat and downloads the
 ### image or video to a folder for later use in the instagram bot. It will be the first to run to...
 ###         1. Check whether there are any new posts 
