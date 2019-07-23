@@ -37,7 +37,7 @@ def get_post_ids(user, r):
         used_ids.append(line.rstrip())
     used_ids_txt.close()
     used_ids_txt = open('used_ids.txt', 'a')
-    for submission in user.submissions.new(limit=10):
+    for submission in user.submissions.new(limit=80):
 
         #time.sleep(5) #For use in final in case the rpi requests too often
 
@@ -46,11 +46,14 @@ def get_post_ids(user, r):
             print("Crap! Self post")
         #SHOULD ignore account posts and posts that are already in the used_ids text file
         if submission not in used_ids and sub != "u_mayaxs":
-            post_ids.append(submission.id)
-            used_ids_txt.write(submission.id + '\n')
-            title, link_to_image, id = get_image(submission.id, submission.title)
-            #SHOULD key out duplicate posts!
-            new_posts[title] = [link_to_image, id]
+            try:
+                post_ids.append(submission.id)
+                used_ids_txt.write(submission.id + '\n')
+                title, link_to_image, id = get_image(submission.id, submission.title)
+                #SHOULD key out duplicate posts!
+                new_posts[title] = [link_to_image, id]
+            except:
+                print(submission, "is not a supported file type or the post may be removed.")
     if post_ids == []:
         print('All posts accounted for!')
 
@@ -65,6 +68,10 @@ def get_post_ids(user, r):
             gfycat_download(new_posts, key)
         elif 'imgur.com' in type:
             imgur_download(new_posts, key)
+        elif 'v.redd.it' in type:
+            vreddit_download(new_posts, key)
+        else:
+            print(type)
 
     used_ids_txt.close()
 
@@ -84,14 +91,16 @@ def get_image(id, title):
         possible_link = (link['href'])
         possible_link = possible_link.split('/')
         for i in possible_link:
-            if i == "gfycat.com" or i == "imgur.com" or i == "i.redd.it":
+            if i == "gfycat.com" or i == "imgur.com" or i == "i.redd.it" or i == "v.redd.it":
+                if i == "v.redd.it":
+                    print(link, "is v.redd.it")
                 return title, "/".join(possible_link), id
 
 def gfycat_download(new_posts, key):
     pass #Gfycat is stupid anyway i'll figure out its API later
 
 def imgur_download(new_posts, key):
-    pass
+    print('Imgur')
 
 def ireddit_download(new_posts, key):
     '''
@@ -110,7 +119,5 @@ def ireddit_download(new_posts, key):
     to_upload = open("img_and_caption.txt", "a")
     to_upload.write(caption + ' | ' + name + "\n")
     to_upload.close()
-
-
 
 main()
