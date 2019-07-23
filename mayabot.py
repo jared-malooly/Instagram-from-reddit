@@ -4,7 +4,7 @@
 ### By Jared Malooly
 ### This script finds the source of the images hosted by imgur, i.redd.it, v.redd.it, and gfycat and downloads the
 ### image or video to a folder for later use in the instagram bot. It will be the first to run to...
-###         1. Check whether there are any new posts 
+###         1. Check whether there are any new posts
 ###         2. Download the post and scrape the caption and post ID from reddit
 ###         3. Record which posts have been downloaded/recorded
 ###
@@ -16,14 +16,15 @@ import time
 import urllib.request
 import os
 
+
 def main():
-    username = 'mayaxs' #The user this bot will be stalking
+    username = 'mayaxs'  # The user this bot will be stalking
 
     # Praw reddit instance
-    r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
-                    client_secret = 'BcRWHiN-UXTagFSlvjgm6m_zQMg',
-                    username = 'Mayabot',
-                    password = 'CoolPasswordDude',
+    r = praw.Reddit(client_id='1scCXWF6gu7Ecg',
+                    client_secret='BcRWHiN-UXTagFSlvjgm6m_zQMg',
+                    username='Mayabot',
+                    password='CoolPasswordDude',
                     user_agent='mayabotV1')
 
     user = r.redditor(username)
@@ -52,8 +53,8 @@ def get_post_ids(user, r):
     used_ids_txt = open('used_ids.txt', 'a')
 
     # iterates through posts and decides on whether or not an action is neccesary.
-    for submission in user.submissions.new(limit=5):
-        # time.sleep(5) #For use in final in case the rpi requests too often
+    for submission in user.submissions.new(limit=100):
+        # time.sleep(5) #For use in final in case the rpi requests too often and is difficult to fix
 
         sub = str(submission.subreddit)
         # SHOULD ignore account posts and posts that are already in the used_ids text file
@@ -63,12 +64,13 @@ def get_post_ids(user, r):
             try:
                 post_ids.append(submission.id)
                 used_ids_txt.write(submission.id + '\n')
-                title, link_to_image, id, imgur_type = get_image(submission.id, submission.title) #Fuck me heres the issue
+                title, link_to_image, id, imgur_type = get_image(submission.id,
+                                                                 submission.title)  # Fuck me heres the issue
                 # SHOULD key out duplicate posts!
                 new_posts[title] = [link_to_image, id, imgur_type]
             except Exception as e:
-                print(e, submission.id)
-                print('The post may be deleted or an invalid (text based) post')
+                print(e, "https://www.reddit.com/"+submission.id)
+                print('The post may be deleted or an invalid (text based) post.\n')
 
     if post_ids == []:
         print('All posts accounted for!')
@@ -77,12 +79,11 @@ def get_post_ids(user, r):
 
     # Decides which website to use to download image/gif
     for key in new_posts:
-        type = []
         type = new_posts[key][0].split("/")
         if "i.redd.it" in type:
             ireddit_download(new_posts, key)
             pass
-        elif 'giant.gfycat.com' in type: #gfycat
+        elif 'giant.gfycat.com' in type:  # gfycat
             gfycat_download(new_posts, key)
         elif 'external-preview.redd.it' in type:
             imgur_download(new_posts, key)
@@ -97,7 +98,9 @@ def get_post_ids(user, r):
         else:
             print('not sure what went wrong here... this is what I recieved: ', type)
 
+    print('Done!')
     used_ids_txt.close()
+
 
 def get_image(id, title):
     '''
@@ -109,7 +112,7 @@ def get_image(id, title):
     '''
 
     url = "https://www.reddit.com/" + id + "/"
-    web_request = requests.get(url, headers = {'User-agent': 'mayabotV1'})
+    web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
 
@@ -137,7 +140,7 @@ def get_image(id, title):
                 # gfycat sucks
                 if i == "gfycat.com":
 
-                    #need to get mp4 link
+                    # need to get mp4 link
 
                     return title, get_gyfy_link("/".join(possible_link)), id, 'n/a'
 
@@ -156,7 +159,8 @@ def get_image(id, title):
                 link = find_src[1].strip('"')
                 link = link.strip('HLSPlaylist.m3u8')
                 link = link + 'DASH_480?source=fallback.mp4'
-                return title, link, id
+                return title, link, id, "n/a"
+
 
 def get_gyfy_link(url):
     '''
@@ -169,7 +173,7 @@ def get_gyfy_link(url):
     web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
-    for div in soup.find_all("div", class_ = "video-container media-container noselect"):
+    for div in soup.find_all("div", class_="video-container media-container noselect"):
         split_div = str(div)
         split_div = split_div.split('"')
         for item in split_div:
@@ -189,7 +193,7 @@ def analyze_imgur(url):
     web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
-    for link in soup.find_all("div", class_ = "post-image-container"):
+    for link in soup.find_all("div", class_="post-image-container"):
         split_div = str(link)
         split_div = split_div.split(' ')
         if 'itemtype="http://schema.org/VideoObject">\n<div' in split_div:
@@ -198,6 +202,7 @@ def analyze_imgur(url):
             return 'jpg'
 
     # Im positive theres a better way to do this than to claw through source code but I couldnt find it and this works too
+
 
 def extract_gallery(new_posts, key):
     '''
@@ -245,7 +250,6 @@ def extract_gallery(new_posts, key):
     to_upload.close()
 
 
-
 def gfycat_download(new_posts, key):
     '''
     downloads video from gfycat and stores in pics folder
@@ -264,6 +268,7 @@ def gfycat_download(new_posts, key):
     to_upload.write(caption + ' | ' + name + "\n")
     to_upload.close()
 
+
 def imgur_download(new_posts, key):
     '''
     downloads file from imgur and stores in pics folder
@@ -280,7 +285,7 @@ def imgur_download(new_posts, key):
         link = link + '.jpg'
     else:
         name = new_posts[key][1] + '.mp4'
-        link = link+ ".mp4"
+        link = link + ".mp4"
     caption = key
     urllib.request.urlretrieve(link, 'pics/' + name)
 
@@ -307,6 +312,7 @@ def ireddit_download(new_posts, key):
     to_upload.write(caption + ' | ' + name + "\n")
     to_upload.close()
 
+
 def vreddit_download(new_posts, key):
     '''
     downloads file from v.redd.it and stores in pics folder
@@ -326,12 +332,11 @@ def vreddit_download(new_posts, key):
     to_upload.close()
 
 
-def run(run_me):
+def run():
     '''
     Gives the ability to run from another program with import. Necessary for automation
     '''
-    
     main()
 
-#debugging, this wont be here in final production
-run()
+# debugging, this wont be here in final production
+#run()
