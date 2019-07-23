@@ -8,7 +8,7 @@ import urllib.request
 import os
 
 def main():
-    username = 'mayabot'
+    username = 'mayaxs'
     r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
                     client_secret = 'BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username = 'Mayabot',
@@ -18,9 +18,6 @@ def main():
     user = r.redditor(username)
     get_post_ids(user, r)
 
-    #instagram post
-    #DM maya posted and link to post
-    #DM maya remove?
 
 def get_post_ids(user, r):
     '''
@@ -42,18 +39,16 @@ def get_post_ids(user, r):
         used_ids.append(line.rstrip())
     used_ids_txt.close()
     used_ids_txt = open('used_ids.txt', 'a')
-    for submission in user.submissions.new(limit=20):
+    for submission in user.submissions.new(limit=5):
 
         #time.sleep(5) #For use in final in case the rpi requests too often
 
         sub = str(submission.subreddit)
-        if sub == "u_" + user.name:
-            print("Crap! Self post")
         #SHOULD ignore account posts and posts that are already in the used_ids text file
         if submission not in used_ids and sub != "u_" + user.name:
             try:
                 post_ids.append(submission.id)
-                #used_ids_txt.write(submission.id + '\n')
+                used_ids_txt.write(submission.id + '\n')
                 title, link_to_image, id, imgur_type = get_image(submission.id, submission.title) #Fuck me heres the issue
                 #SHOULD key out duplicate posts!
                 new_posts[title] = [link_to_image, id, imgur_type]
@@ -63,6 +58,8 @@ def get_post_ids(user, r):
 
     if post_ids == []:
         print('All posts accounted for!')
+    else:
+        print('\n\nNew Post!\n\n')
     #Decides which API to use to download image/gif
     for key in new_posts:
         type = []
@@ -70,7 +67,7 @@ def get_post_ids(user, r):
         if "i.redd.it" in type:
             ireddit_download(new_posts, key)
             pass
-        elif 'gfycat.com' in type:
+        elif 'giant.gfycat.com' in type:
             gfycat_download(new_posts, key)
         elif 'external-preview.redd.it' in type:
             imgur_download(new_posts, key)
@@ -108,11 +105,14 @@ def get_image(id, title):
                     #    video
                     #    gallery
                     imgur_type = analyze_imgur("/".join(possible_link))
-                    if imgur_type == 'jpg':
-                        extension = '.jpg'
-                    elif imgur_type == 'video':
-                        extension = '.mp4'
+
                     return title, "/".join(possible_link), id, imgur_type
+                if i == "gfycat.com":
+
+                    #need to get mp4 link
+
+                    return title, get_gyfy_link("/".join(possible_link)), id, 'n/a'
+
                 else:
                     return title, "/".join(possible_link), id, "n/a"
 
@@ -127,8 +127,32 @@ def get_image(id, title):
                 link = link + 'DASH_480?source=fallback.mp4'
                 return title, link, id
 
+def get_gyfy_link(url):
+    '''
+    Finds the source file for a gfycat link, and returns the source
+
+    url: the original "site" url where the source is hosted
+    '''
+
+    web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
+    data = web_request.text
+    soup = BeautifulSoup(data, "html.parser")
+    for div in soup.find_all("div", class_ = "video-container media-container noselect"):
+        split_div = str(div)
+        split_div = split_div.split('"')
+        for item in split_div:
+            possible_link = item.split('.')
+            if "mp4" in possible_link:
+                return item
+
 
 def analyze_imgur(url):
+    '''
+    Decides whether the image on imgur should be treated like a video or an image.
+
+    url: the original "site" url where the source is hosted
+    '''
+
     web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
@@ -187,11 +211,25 @@ def extract_gallery(new_posts, key):
 
 
 def gfycat_download(new_posts, key):
-    pass #Gfycat is stupid anyway i'll figure out its API later
+    '''
+    downloads video from gfycat and stores in pics folder
+    Also adds to captions list file so we post with the same caption as the picture
+
+    new_posts: dictionary containing caption, image id, and link
+    key: finds the correct picture/caption within the dictionary
+    '''
+    link = new_posts[key][0]
+    name = new_posts[key][1] + '.mp4'
+    caption = key
+    urllib.request.urlretrieve(link, 'pics/' + name)
+
+    to_upload = open("img_and_caption.txt", "a")
+    to_upload.write(caption + ' | ' + name + "\n")
+    to_upload.close()
 
 def imgur_download(new_posts, key):
     '''
-    downloads **image** from imgur and stores in pics folder
+    downloads file from imgur and stores in pics folder
     Also adds to captions list file so we post with the same caption as the picture
 
     new_posts: dictionary containing caption, image id, and link
@@ -207,7 +245,6 @@ def imgur_download(new_posts, key):
         name = new_posts[key][1] + '.mp4'
         link = link+ ".mp4"
     caption = key
-    print(link)
     urllib.request.urlretrieve(link, 'pics/' + name)
 
     to_upload = open("img_and_caption.txt", "a")
@@ -234,6 +271,13 @@ def ireddit_download(new_posts, key):
     to_upload.close()
 
 def vreddit_download(new_posts, key):
+    '''
+    downloads file from v.redd.it and stores in pics folder
+    Also adds to captions list file so we post with the same caption as the picture
+
+    new_posts: dictionary containing caption, image id, and link
+    key: finds the correct picture/caption within the dictionary
+    '''
 
     link = new_posts[key][0]
     name = new_posts[key][1] + '.mp4'
@@ -246,6 +290,11 @@ def vreddit_download(new_posts, key):
 
 
 def run(run_me):
+    '''
+    Gives the ability to run from another program with import. Needed for automation
+    '''
     if run_me:
         main()
+
+#debugging
 run(True)
