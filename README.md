@@ -6,7 +6,7 @@ WIP currently
 
 ===========
 
-# Required libraries: #
+# Required libraries:
 
 bs4
 
@@ -15,7 +15,7 @@ PRAW
 requests
 
 ===========
-# TO DO: #
+### TO DO:
 
 ~~Data storage~~
 
