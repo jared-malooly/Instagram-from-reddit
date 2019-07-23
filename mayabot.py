@@ -17,8 +17,25 @@ import urllib.request
 import os
 
 
-def main():
-    username = 'mayaxs'  # The user this bot will be stalking
+def main(started):
+    username = 'gallowboob'  # The user this bot will be stalking
+    # create necessary files on first run
+    if started == 0:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        p = open("used_ids.txt", "w+")
+        p.truncate(0)
+        p.close()
+        print('created or erased used_ids.txt')
+        p = open("img_and_caption.txt", "w+")
+        p.truncate(0)
+        p.close()
+        print('created or erased img_and_caption.txt')
+        # create directory for pics. All images/mp4s will be stored in this directory for processing
+        print(dir_path)
+        try:
+            os.mkdir(dir_path + '/pics')
+        except:
+            print('Directory already exists')
 
     # Praw reddit instance
     r = praw.Reddit(client_id='1scCXWF6gu7Ecg',
@@ -53,7 +70,7 @@ def get_post_ids(user, r):
     used_ids_txt = open('used_ids.txt', 'a')
 
     # iterates through posts and decides on whether or not an action is neccesary.
-    for submission in user.submissions.new(limit=100):
+    for submission in user.submissions.new(limit=200):
         # time.sleep(5) #For use in final in case the rpi requests too often and is difficult to fix
 
         sub = str(submission.subreddit)
@@ -61,6 +78,7 @@ def get_post_ids(user, r):
         # If post ID is already stored, then dont do anything. If all the posts found are already stored, print a notification
         if submission not in used_ids and sub != "u_" + user.name:
             # only find photos
+            start = time.time()
             try:
                 post_ids.append(submission.id)
                 used_ids_txt.write(submission.id + '\n')
@@ -71,14 +89,16 @@ def get_post_ids(user, r):
             except Exception as e:
                 print(e, "https://www.reddit.com/"+submission.id)
                 print('The post may be deleted or an invalid (text based) post.\n')
-
+            end = time.time()
+            print("{:.2f}".format(end - start) + " seconds to find https://reddit.com/" + id)
     if post_ids == []:
         print('All posts accounted for!')
     else:
-        print('\n\nNew Post!\n\n')
+        pass
 
     # Decides which website to use to download image/gif
     for key in new_posts:
+        start = time.time()
         type = new_posts[key][0].split("/")
         if "i.redd.it" in type:
             ireddit_download(new_posts, key)
@@ -97,8 +117,10 @@ def get_post_ids(user, r):
         # this should never happen
         else:
             print('not sure what went wrong here... this is what I recieved: ', type)
-
+    end = time.time()
+    print("{:.2f}".format(end - start) + " seconds to download https://reddit.com/" + id)
     print('Done!')
+    penis = input('')
     used_ids_txt.close()
 
 
@@ -332,11 +354,11 @@ def vreddit_download(new_posts, key):
     to_upload.close()
 
 
-def run():
+def run(started):
     '''
     Gives the ability to run from another program with import. Necessary for automation
     '''
-    main()
+    main(started)
 
 # debugging, this wont be here in final production
 #run()
