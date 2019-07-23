@@ -14,6 +14,9 @@ PRAW
 
 requests
 
+pillow
+  --Uninstall PIL
+
 ===========
 ### TO DO:
 
