@@ -8,7 +8,7 @@ import urllib.request
 import os
 
 def main():
-    username = 'mayaxs'
+    username = 'mayabot'
     r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
                     client_secret = 'BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username = 'Mayabot',
@@ -18,7 +18,6 @@ def main():
     user = r.redditor(username)
     get_post_ids(user, r)
 
-    #DM maya update
     #instagram post
     #DM maya posted and link to post
     #DM maya remove?
@@ -43,7 +42,7 @@ def get_post_ids(user, r):
         used_ids.append(line.rstrip())
     used_ids_txt.close()
     used_ids_txt = open('used_ids.txt', 'a')
-    for submission in user.submissions.new(limit=5):
+    for submission in user.submissions.new(limit=20):
 
         #time.sleep(5) #For use in final in case the rpi requests too often
 
@@ -55,16 +54,15 @@ def get_post_ids(user, r):
             try:
                 post_ids.append(submission.id)
                 #used_ids_txt.write(submission.id + '\n')
-                title, link_to_image, id = get_image(submission.id, submission.title) #Fuck me heres the issue
+                title, link_to_image, id, imgur_type = get_image(submission.id, submission.title) #Fuck me heres the issue
                 #SHOULD key out duplicate posts!
-                new_posts[title] = [link_to_image, id]
+                new_posts[title] = [link_to_image, id, imgur_type]
             except Exception as e:
                 print(e, submission.id)
                 print('The post may be deleted or an invalid (text based) post')
 
     if post_ids == []:
         print('All posts accounted for!')
-
     #Decides which API to use to download image/gif
     for key in new_posts:
         type = []
@@ -78,8 +76,11 @@ def get_post_ids(user, r):
             imgur_download(new_posts, key)
         elif 'DASH_480?source=fallback.mp4' in type:
             vreddit_download(new_posts, key)
-        elif 'gallery' in type:
-            extract_gallery(new_posts, key)
+        elif 'imgur.com' in type:
+            if 'gallery' in type:
+                extract_gallery(new_posts, key)
+            else:
+                imgur_download(new_posts, key)
 
     used_ids_txt.close()
 
@@ -100,10 +101,20 @@ def get_image(id, title):
         possible_link = possible_link.split('/')
 
         for i in possible_link:
-            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "imgur.com" or i == "i.redd.it":
-                if i == "gallery":
-                    print(link, "is v.redd.it")
-                return title, "/".join(possible_link), id
+            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "imgur.com" or i == "i.redd.it" or i == "gallery":
+                if i == 'imgur.com':
+                    #Three types of imgur links:
+                    #    jpg
+                    #    video
+                    #    gallery
+                    imgur_type = analyze_imgur("/".join(possible_link))
+                    if imgur_type == 'jpg':
+                        extension = '.jpg'
+                    elif imgur_type == 'video':
+                        extension = '.mp4'
+                    return title, "/".join(possible_link), id, imgur_type
+                else:
+                    return title, "/".join(possible_link), id, "n/a"
 
     for link in soup.find_all("video"):
         split_div = str(link)
@@ -117,10 +128,18 @@ def get_image(id, title):
                 return title, link, id
 
 
-def get_video(id, title):
-    print('v.redd.it')
+def analyze_imgur(url):
+    web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
+    data = web_request.text
+    soup = BeautifulSoup(data, "html.parser")
+    for link in soup.find_all("div", class_ = "post-image-container"):
+        split_div = str(link)
+        split_div = split_div.split(' ')
+        if 'itemtype="http://schema.org/VideoObject">\n<div' in split_div:
+            return 'video'
+        elif 'itemtype="http://schema.org/ImageObject">\n<div' in split_div:
+            return 'jpg'
 
-    #
 
 def extract_gallery(new_posts, key):
     '''
@@ -131,6 +150,8 @@ def extract_gallery(new_posts, key):
     '''
 
     url = new_posts[key][0]
+
+    imgur_type = new_posts[key][2]
     web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
@@ -146,16 +167,21 @@ def extract_gallery(new_posts, key):
         try:
             possible_link = (link['id'])
             id = possible_link
-            link = 'https://imgur.com/' + id +'/'
-            name = id + '.jpg'
-            caption = key
+            link = 'https://imgur.com/' + id
+
+            if imgur_type == "video":
+                link = link + ".mp4"
+                name = id + '.mp4'
+            else:
+                name = id + '.jpg'
+                link = link + '.jpg'
 
             urllib.request.urlretrieve(link, 'pics/' + folder_name + '/' + name)
         except Exception as e:
             print(e)
 
     to_upload = open("img_and_caption.txt", "a")
-    to_upload.write(caption + ' | ' + folder_name + ' | ' + "GALLERY" + "\n")
+    to_upload.write(key + ' | ' + folder_name + ' | ' + "GALLERY" + "\n")
     to_upload.close()
 
 
@@ -173,8 +199,15 @@ def imgur_download(new_posts, key):
     '''
 
     link = new_posts[key][0]
-    name = new_posts[key][1] + '.jpg'
+    imgur_type = new_posts[key][2]
+    if imgur_type == "jpg":
+        name = new_posts[key][1] + '.jpg'
+        link = link + '.jpg'
+    else:
+        name = new_posts[key][1] + '.mp4'
+        link = link+ ".mp4"
     caption = key
+    print(link)
     urllib.request.urlretrieve(link, 'pics/' + name)
 
     to_upload = open("img_and_caption.txt", "a")
@@ -211,4 +244,8 @@ def vreddit_download(new_posts, key):
     to_upload.write(caption + ' | ' + name + "\n")
     to_upload.close()
 
-main()
+
+def run(run_me):
+    if run_me:
+        main()
+run(True)
