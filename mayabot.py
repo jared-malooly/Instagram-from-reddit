@@ -1,4 +1,6 @@
+###
 ### For Maya, thanks for the project
+###
 
 import praw
 from bs4 import BeautifulSoup
@@ -8,7 +10,9 @@ import urllib.request
 import os
 
 def main():
-    username = 'mayaxs'
+    username = 'mayaxs' #The user this bot will be stalking
+
+    # Praw reddit instance
     r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
                     client_secret = 'BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username = 'Mayabot',
@@ -34,23 +38,26 @@ def get_post_ids(user, r):
     post_ids = []
     new_posts = {}
     used_ids_txt = open('used_ids.txt', 'r')
-    #read text file to list of used ids so the program doesnt repeat posts
+    # read text file to list of used ids so the program doesnt repeat posts
     for line in used_ids_txt:
         used_ids.append(line.rstrip())
     used_ids_txt.close()
     used_ids_txt = open('used_ids.txt', 'a')
-    for submission in user.submissions.new(limit=5):
 
-        #time.sleep(5) #For use in final in case the rpi requests too often
+    # iterates through posts and decides on whether or not an action is neccesary.
+    for submission in user.submissions.new(limit=5):
+        # time.sleep(5) #For use in final in case the rpi requests too often
 
         sub = str(submission.subreddit)
-        #SHOULD ignore account posts and posts that are already in the used_ids text file
+        # SHOULD ignore account posts and posts that are already in the used_ids text file
+        # If post ID is already stored, then dont do anything. If all the posts found are already stored, print a notification
         if submission not in used_ids and sub != "u_" + user.name:
+            # only find photos
             try:
                 post_ids.append(submission.id)
                 used_ids_txt.write(submission.id + '\n')
                 title, link_to_image, id, imgur_type = get_image(submission.id, submission.title) #Fuck me heres the issue
-                #SHOULD key out duplicate posts!
+                # SHOULD key out duplicate posts!
                 new_posts[title] = [link_to_image, id, imgur_type]
             except Exception as e:
                 print(e, submission.id)
@@ -60,14 +67,15 @@ def get_post_ids(user, r):
         print('All posts accounted for!')
     else:
         print('\n\nNew Post!\n\n')
-    #Decides which API to use to download image/gif
+
+    # Decides which website to use to download image/gif
     for key in new_posts:
         type = []
         type = new_posts[key][0].split("/")
         if "i.redd.it" in type:
             ireddit_download(new_posts, key)
             pass
-        elif 'giant.gfycat.com' in type:
+        elif 'giant.gfycat.com' in type: #gfycat
             gfycat_download(new_posts, key)
         elif 'external-preview.redd.it' in type:
             imgur_download(new_posts, key)
@@ -78,6 +86,9 @@ def get_post_ids(user, r):
                 extract_gallery(new_posts, key)
             else:
                 imgur_download(new_posts, key)
+        # this should never happen
+        else:
+            print('not sure what went wrong here... this is what I recieved: ', type)
 
     used_ids_txt.close()
 
@@ -89,33 +100,46 @@ def get_image(id, title):
     title: Title of post
     return: title and URL of image/GIF
     '''
+
     url = "https://www.reddit.com/" + id + "/"
     web_request = requests.get(url, headers = {'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
+
+    # find source link, and return it to get_post_ids()
     for link in soup.find_all('a', href=True):
         possible_link = (link['href'])
         possible_link = possible_link.split('/')
 
         for i in possible_link:
-            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "imgur.com" or i == "i.redd.it" or i == "gallery":
+            if (i == "gfycat.com" or
+                    i == "external-preview.redd.it" or
+                    i == "imgur.com" or
+                    i == "i.redd.it" or
+                    i == "gallery"):
+                # Imgur
                 if i == 'imgur.com':
-                    #Three types of imgur links:
+                    # Three types of imgur links:
                     #    jpg
                     #    video
                     #    gallery
                     imgur_type = analyze_imgur("/".join(possible_link))
 
                     return title, "/".join(possible_link), id, imgur_type
+
+                # gfycat sucks
                 if i == "gfycat.com":
 
                     #need to get mp4 link
 
                     return title, get_gyfy_link("/".join(possible_link)), id, 'n/a'
 
+                # Anything else.... well not anything. Actually a lot of host websites are not supported yet. Sorry.
                 else:
                     return title, "/".join(possible_link), id, "n/a"
 
+    # For v.redd.it in case it decides to show up and be difficult
+    # Seriously, reddit hides its source files very well
     for link in soup.find_all("video"):
         split_div = str(link)
         split_div = split_div.split(' ')
@@ -134,6 +158,7 @@ def get_gyfy_link(url):
     url: the original "site" url where the source is hosted
     '''
 
+    # Basically just sorts through the HTML index until it finds a source, and returns the link
     web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
@@ -153,6 +178,7 @@ def analyze_imgur(url):
     url: the original "site" url where the source is hosted
     '''
 
+    # same as gyfy_link(): sorts through the HTML index until it finds a source, and returns the link
     web_request = requests.get(url, headers={'User-agent': 'mayabotV1'})
     data = web_request.text
     soup = BeautifulSoup(data, "html.parser")
@@ -164,6 +190,7 @@ def analyze_imgur(url):
         elif 'itemtype="http://schema.org/ImageObject">\n<div' in split_div:
             return 'jpg'
 
+    # Im positive theres a better way to do this than to claw through source code but I couldnt find it and this works too
 
 def extract_gallery(new_posts, key):
     '''
@@ -181,12 +208,14 @@ def extract_gallery(new_posts, key):
     soup = BeautifulSoup(data, "html.parser")
     folder_name = new_posts[key][1]
 
-    # create directory for extraction
+    # create directory for extraction. All images/mp4s will be stored in this directory for processing, and the
+    # img_and_caption.txt will have an extra note to distinguish
     try:
         os.mkdir('pics/' + folder_name)
     except:
         print("Folder already exists dummy")
 
+    # Get all links, download source, and put those suckers in the folder where they belong
     for link in soup.find_all("div", class_="post-image-container"):
         try:
             possible_link = (link['id'])
@@ -218,6 +247,7 @@ def gfycat_download(new_posts, key):
     new_posts: dictionary containing caption, image id, and link
     key: finds the correct picture/caption within the dictionary
     '''
+
     link = new_posts[key][0]
     name = new_posts[key][1] + '.mp4'
     caption = key
@@ -291,10 +321,10 @@ def vreddit_download(new_posts, key):
 
 def run(run_me):
     '''
-    Gives the ability to run from another program with import. Needed for automation
+    Gives the ability to run from another program with import. Necessary for automation
     '''
-    if run_me:
-        main()
+    
+    main()
 
-#debugging
-run(True)
+#debugging, this wont be here in final production
+run()
