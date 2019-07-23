@@ -1,4 +1,4 @@
-###For Maya, thanks for the project
+### For Maya, thanks for the project
 
 import praw
 from bs4 import BeautifulSoup
@@ -43,7 +43,7 @@ def get_post_ids(user, r):
         used_ids.append(line.rstrip())
     used_ids_txt.close()
     used_ids_txt = open('used_ids.txt', 'a')
-    for submission in user.submissions.new(limit=80):
+    for submission in user.submissions.new(limit=20):
 
         #time.sleep(5) #For use in final in case the rpi requests too often
 
@@ -58,14 +58,9 @@ def get_post_ids(user, r):
                 title, link_to_image, id = get_image(submission.id, submission.title) #Fuck me heres the issue
                 #SHOULD key out duplicate posts!
                 new_posts[title] = [link_to_image, id]
-            except:
-                #Is it a video or gif?
-                try:
-                    title, link_to_image, id = get_video(submission.id, submission.title)
+            except Exception as e:
+                print(e)
 
-                #Removed/unavailable
-                except:
-                    print('Video or image may be removed or invalid.')
     if post_ids == []:
         print('All posts accounted for!')
 
@@ -102,16 +97,15 @@ def get_image(id, title):
     for link in soup.find_all('a', href=True):
         possible_link = (link['href'])
         possible_link = possible_link.split('/')
+
         for i in possible_link:
-            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "blob:https:" or i == "v.redd.it":
-                if i == "blob:https:":
+            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "imgur.com" or i == "i.redd.it":
+                if i == "gallery":
                     print(link, "is v.redd.it")
-                    return title, "/".join(possible_link), id
-            if i == "gallery":
                 return title, "/".join(possible_link), id
 
 def get_video(id, title):
-    print(id, title)
+    pass
 
     #
 
