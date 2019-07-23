@@ -25,9 +25,9 @@ requests
 
 ~~i.redd.it and v.redd.it~~
 
-imgur gif to mp4
+~~imgur gif to mp4~~
 
-figure out gfycat
+~~figure out gfycat~~
 
 instagram
 
