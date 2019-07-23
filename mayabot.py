@@ -7,14 +7,14 @@ import time
 import urllib.request
 
 def main():
+    username = 'AbleHoney'
     r = praw.Reddit(client_id = '1scCXWF6gu7Ecg',
                     client_secret = 'BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username = 'Mayabot',
                     password = 'CoolPasswordDude',
                     user_agent='mayabotV1')
 
-    user = r.redditor('mayaxs')
-
+    user = r.redditor(username)
     get_post_ids(user, r)
 
 def get_post_ids(user, r):
@@ -42,14 +42,14 @@ def get_post_ids(user, r):
         #time.sleep(5) #For use in final in case the rpi requests too often
 
         sub = str(submission.subreddit)
-        if sub == "u_mayaxs":
+        if sub == "u_" + user.name:
             print("Crap! Self post")
         #SHOULD ignore account posts and posts that are already in the used_ids text file
-        if submission not in used_ids and sub != "u_mayaxs":
+        if submission not in used_ids and sub != "u_" + user.name:
             try:
                 post_ids.append(submission.id)
                 used_ids_txt.write(submission.id + '\n')
-                title, link_to_image, id = get_image(submission.id, submission.title)
+                title, link_to_image, id = get_image(submission.id, submission.title) #Fuck me heres the issue
                 #SHOULD key out duplicate posts!
                 new_posts[title] = [link_to_image, id]
             except:
@@ -66,7 +66,7 @@ def get_post_ids(user, r):
             pass
         elif 'gfycat.com' in type:
             gfycat_download(new_posts, key)
-        elif 'imgur.com' in type:
+        elif 'external-preview.redd.it' in type:
             imgur_download(new_posts, key)
         elif 'v.redd.it' in type:
             vreddit_download(new_posts, key)
@@ -91,16 +91,32 @@ def get_image(id, title):
         possible_link = (link['href'])
         possible_link = possible_link.split('/')
         for i in possible_link:
-            if i == "gfycat.com" or i == "imgur.com" or i == "i.redd.it" or i == "v.redd.it":
+            if i == "gfycat.com" or i == "external-preview.redd.it" or i == "i.redd.it" or i == "v.redd.it":
                 if i == "v.redd.it":
                     print(link, "is v.redd.it")
+
                 return title, "/".join(possible_link), id
 
 def gfycat_download(new_posts, key):
     pass #Gfycat is stupid anyway i'll figure out its API later
 
 def imgur_download(new_posts, key):
-    print('Imgur')
+    '''
+    downloads **image** from imgur and stores in pics folder
+    Also adds to captions list file so we post with the same caption as the picture
+    new_posts: dictionary containing caption, image id, and link
+    key: finds the correct picture/caption within the dictionary
+    '''
+    
+    link = new_posts[key][0]
+    name = new_posts[key][1] + '.jpg'
+    caption = key
+    urllib.request.urlretrieve(link, 'pics/' + name)
+
+    to_upload = open("img_and_caption.txt", "a")
+    to_upload.write(caption + ' | ' + name + "\n")
+    to_upload.close()
+
 
 def ireddit_download(new_posts, key):
     '''
