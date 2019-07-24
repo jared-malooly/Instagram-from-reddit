@@ -38,9 +38,9 @@ opencv-python
 
 ~~Squarize THE DAMN IMAGES~~
 
-Squarize THE DAMN VIDEOS >:(
+~~Squarize THE DAMN VIDEOS >:(~~
 
-Better storage solution or rework?
+~~Better storage solution or rework?~~
 
 instagram
 
