@@ -18,7 +18,7 @@ import os
 
 
 def main(started):
-    username = 'gallowboob'  # The user this bot will be stalking
+    username = 'mayabot'  # The user this bot will be stalking
     # create necessary files on first run
     if started == 0:
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -70,7 +70,7 @@ def get_post_ids(user, r):
     used_ids_txt = open('used_ids.txt', 'a')
 
     # iterates through posts and decides on whether or not an action is neccesary.
-    for submission in user.submissions.new(limit=200):
+    for submission in user.submissions.new(limit=5):
         # time.sleep(5) #For use in final in case the rpi requests too often and is difficult to fix
 
         sub = str(submission.subreddit)
@@ -78,7 +78,6 @@ def get_post_ids(user, r):
         # If post ID is already stored, then dont do anything. If all the posts found are already stored, print a notification
         if submission not in used_ids and sub != "u_" + user.name:
             # only find photos
-            start = time.time()
             try:
                 post_ids.append(submission.id)
                 used_ids_txt.write(submission.id + '\n')
@@ -89,8 +88,7 @@ def get_post_ids(user, r):
             except Exception as e:
                 print(e, "https://www.reddit.com/"+submission.id)
                 print('The post may be deleted or an invalid (text based) post.\n')
-            end = time.time()
-            print("{:.2f}".format(end - start) + " seconds to find https://reddit.com/" + id)
+
     if post_ids == []:
         print('All posts accounted for!')
     else:
@@ -98,29 +96,33 @@ def get_post_ids(user, r):
 
     # Decides which website to use to download image/gif
     for key in new_posts:
-        start = time.time()
-        type = new_posts[key][0].split("/")
-        if "i.redd.it" in type:
-            ireddit_download(new_posts, key)
-            pass
-        elif 'giant.gfycat.com' in type:  # gfycat
-            gfycat_download(new_posts, key)
-        elif 'external-preview.redd.it' in type:
-            imgur_download(new_posts, key)
-        elif 'DASH_480?source=fallback.mp4' in type:
-            vreddit_download(new_posts, key)
-        elif 'imgur.com' in type:
-            if 'gallery' in type:
-                extract_gallery(new_posts, key)
-            else:
+        try:
+            start = time.time()
+            type = str(new_posts[key][0]).split("/")
+            if "i.redd.it" in type:
+                ireddit_download(new_posts, key)
+                pass
+            elif 'giant.gfycat.com' in type:  # gfycat
+                gfycat_download(new_posts, key)
+            elif 'external-preview.redd.it' in type:
                 imgur_download(new_posts, key)
-        # this should never happen
-        else:
-            print('not sure what went wrong here... this is what I recieved: ', type)
-    end = time.time()
-    print("{:.2f}".format(end - start) + " seconds to download https://reddit.com/" + id)
+            elif 'DASH_480?source=fallback.mp4' in type:
+                vreddit_download(new_posts, key)
+            elif 'imgur.com' in type:
+                if 'gallery' in type:
+                    extract_gallery(new_posts, key)
+                else:
+                    imgur_download(new_posts, key)
+            # this should never happen
+            else:
+                print('not sure what went wrong here... this is what I recieved: ', type)
+            end = time.time()
+            print("{:.2f}".format(end - start) + " seconds to download https://reddit.com/" + new_posts[key][1])
+        except:
+            print('Fucky shit went on here. Either the file was not supported and still attempted')
+            print('to go through, or the file is undownloadable through some sort of lock..')
+            print("\nI'll just ignore it.\n")
     print('Done!')
-    penis = input('')
     used_ids_txt.close()
 
 
@@ -359,6 +361,7 @@ def run(started):
     Gives the ability to run from another program with import. Necessary for automation
     '''
     main(started)
+    started += 1
 
-# debugging, this wont be here in final production
-#run()
+# Wont be here in final product, only using this to debug
+# run(0)
