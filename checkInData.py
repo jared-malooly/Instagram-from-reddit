@@ -1,7 +1,7 @@
 ###
 ### By Jared Malooly
 ### Uses img_and_caption file to get image and caption data and send it to instagram posting script, then clears it.
-### Also, more importantly, resizes the images so that instagram can actually post them.
+### Also, more importantly, resizes the images and videos so that instagram can actually post them.
 ###
 
 
@@ -10,6 +10,11 @@ import mayabot
 import time
 import glob, os
 from PIL import Image
+import math
+import random
+import cv2
+import numpy as np
+import shutil
 
 def process_image(post_caption):
     '''
@@ -37,37 +42,167 @@ def process_image(post_caption):
                     image = Image.open("pics/" + post_caption[1])
                     w, h = image.size
 
-                    print(w, h)
-
                     if int(w) > int(h):
-                        print('Wide')
+                        image = wide_image(image, False)
+                        image.save("pics/" + post_caption[1])
 
                     elif int(w) < int(h):
-                        print('Tall')
+                        image = tall_image(image, False)
+                        image.save("pics/" + post_caption[1])
                     else:
-                        print('Square')
-                    time.sleep(5)
-                except:
-                    print("Couldn't find the image")
+                        pass
+                    time.sleep(1)
+                except Exception as e:
+                    print(e)
 
+    type = post_caption[1].split(".")
+
+    if "jpg" in type:
+        try:
+            image = Image.open("pics/" + post_caption[1])
+            w, h = image.size
+
+            if int(w) > int(h):
+                image = wide_image(image, False)
+                image.save("pics/" + post_caption[1])
+
+
+            elif int(w) < int(h):
+                image = tall_image(image, False)
+                image.save("pics/" + post_caption[1])
+
+            else:
+                pass
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+    elif "mp4" in type:
+        try:
+            process_video("pics/" + post_caption[1], post_caption[1].rstrip(".mp4"))
+        except Exception as e:
+            print(e)
+
+def process_video(video_directory, folder_name):
+
+    print("Stripping frames from video and adding square background for file: " + file_name)
+    vidcap = cv2.VideoCapture(video_directory)
+    success, image = vidcap.read()
 
     try:
-        image = Image.open("pics/" + post_caption[1])
-        w, h = image.size
-
-        print(w, h)
-
-        if int(w) > int(h):
-            print('Wide')
-
-        elif int(w) < int(h):
-            print('Tall')
-        else:
-            print('Square')
-        time.sleep(5)
+        os.mkdir("pics/" + folder_name)
     except:
-        print("Couldn't find the image")
+        print("Folder already exists dummy")
 
+    frames = []
+    count = 0
+    while success:
+        success, image = vidcap.read()
+
+        cv2.imwrite("frame%d.jpg" % count, image)  # save frame as JPEG file
+        os.rename("frame%d.jpg" % count, "pics/" + folder_name + "/" + "frame%d.jpg" % count)
+
+        try:
+            image = Image.open("pics/" + folder_name + "/" + "frame%d.jpg" % count)
+            w, h = image.size
+
+            frames.append("pics/" + folder_name + "/" + "frame%d.jpg" % count)
+
+            if int(w) > int(h):
+                image = wide_image(image, True)
+                image.save("pics/" + folder_name + "/" + "frame%d.jpg" % count)
+
+            elif int(w) < int(h):
+                image = tall_image(image, True)
+                image.save("pics/" + folder_name + "/" + "frame%d.jpg" % count)
+        except:
+            pass
+        count += 1
+
+    make_video(frames, folder_name)
+
+    # DELETE THE FOLDER!!
+
+
+def make_video(frames, file_name):
+    print("Converting frames back to mp4 for file: " + file_name + "\n")
+
+    img = cv2.imread(frames[0])
+    height, width, layers = img.shape
+    size = (width, height)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter("pics/" + file_name + '.mp4', fourcc, 30, size)
+
+    for i in frames:
+        img = cv2.imread(i)
+        out.write(img)
+
+    out.release()
+    shutil.rmtree("pics/" + file_name)
+
+
+def wide_image(image, is_video):
+    w, h = image.size
+
+    canvas_width = w
+    canvas_height = w
+    # Center the image
+    x1 = int(math.floor((canvas_width - w) / 2))
+    y1 = int(math.floor((canvas_width - h) / 2))
+
+    mode = image.mode
+    if len(mode) == 1:  # L, 1
+        new_background = (255)
+    if len(mode) == 3:  # RGB
+        if not is_video:
+            new_background = random_pastel(mode)
+        else:
+            new_background = (117, 201, 204)
+    if len(mode) == 4:  # RGBA, CMYK
+        if not is_video:
+            new_background = random_pastel(mode)
+        else:
+            new_background = (117, 201, 204, 255)
+
+    newImage = Image.new(mode, (canvas_width, canvas_height), new_background)
+    newImage.paste(image, (x1, y1, x1 + w, y1 + h))
+
+    return newImage
+
+def tall_image(image, is_video):
+    w, h = image.size
+
+    canvas_width = h
+    canvas_height = h
+    # Center the image
+    x1 = int(math.floor((canvas_width - w) / 2))
+    y1 = int(math.floor((canvas_width - h) / 2))
+
+    mode = image.mode
+    if len(mode) == 1:  # L, 1
+        new_background = (255)
+    if len(mode) == 3:  # RGB
+        if not is_video:
+            new_background = random_pastel(mode)
+        else:
+            new_background = (117, 201, 204)
+    if len(mode) == 4:  # RGBA, CMYK
+        if not is_video:
+            new_background = random_pastel(mode)
+        else:
+            new_background = (117, 201, 204, 255)
+
+    newImage = Image.new(mode, (canvas_width, canvas_height), new_background)
+    newImage.paste(image, (x1, y1, x1 + w, y1 + h))
+
+    return newImage
+
+def random_pastel(mode):
+    availible_pastels = [(242, 187, 172), (251, 219, 206), (236, 234, 229), (175, 223, 219), (117, 201, 204)]
+    if len(mode) == 3:
+        return availible_pastels[random.randint(0, len(availible_pastels) - 1)]
+    if len(mode) == 4:
+        return availible_pastels[random.randint(0, len(availible_pastels) - 1)]
 
 amount = 0
 while True:
