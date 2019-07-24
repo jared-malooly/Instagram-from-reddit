@@ -32,6 +32,12 @@ pillow
 
 ~~figure out gfycat~~
 
+RESIZE THE DAMN IMAGES and
+
+RESIZE THE DAMN VIDEOS >:(
+
+Better storage solution or rework?
+
 instagram
 
 automation on pi
