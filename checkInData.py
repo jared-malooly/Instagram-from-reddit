@@ -13,7 +13,6 @@ from PIL import Image
 import math
 import random
 import cv2
-import numpy as np
 import shutil
 
 def process_image(post_caption):
@@ -85,7 +84,7 @@ def process_image(post_caption):
 
 def process_video(video_directory, folder_name):
 
-    print("Stripping frames from video and adding square background for file: " + file_name)
+    print("Stripping frames from video and adding square background for file: " + folder_name + ".mp4")
     vidcap = cv2.VideoCapture(video_directory)
     success, image = vidcap.read()
 
@@ -121,11 +120,9 @@ def process_video(video_directory, folder_name):
 
     make_video(frames, folder_name)
 
-    # DELETE THE FOLDER!!
-
 
 def make_video(frames, file_name):
-    print("Converting frames back to mp4 for file: " + file_name + "\n")
+    print("Converting frames back to mp4 for file: " + file_name + ".mp4\n")
 
     img = cv2.imread(frames[0])
     height, width, layers = img.shape
