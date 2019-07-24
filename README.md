@@ -17,6 +17,8 @@ requests
 pillow
   --Uninstall PIL
 
+numpy??
+
 ===========
 ### TO DO:
 
