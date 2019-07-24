@@ -16,12 +16,13 @@ import time
 import urllib.request
 import os
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+print(os.path.dirname(os.path.realpath(__file__)))
 
 def main(started):
     username = 'mayabot'  # The user this bot will be stalking
     # create necessary files on first run
     if started == 0:
-        dir_path = os.path.dirname(os.path.realpath(__file__))
         p = open("used_ids.txt", "w+")
         p.truncate(0)
         p.close()
@@ -31,7 +32,6 @@ def main(started):
         p.close()
         print('created or erased img_and_caption.txt')
         # create directory for pics. All images/mp4s will be stored in this directory for processing
-        print(dir_path)
         try:
             os.mkdir(dir_path + '/pics')
         except:
@@ -59,6 +59,8 @@ def get_post_ids(user, r):
     r: reddit instance
     '''
 
+    # ALLOWED SUBREDDITS TO GRAB IMAGES FROM:
+    #allowed_subs = []
     used_ids = []
     post_ids = []
     new_posts = {}
