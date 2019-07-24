@@ -36,9 +36,9 @@ opencv-python
 
 ~~figure out gfycat~~
 
-RESIZE THE DAMN IMAGES and
+~~Squarize THE DAMN IMAGES~~
 
-RESIZE THE DAMN VIDEOS >:(
+Squarize THE DAMN VIDEOS >:(
 
 Better storage solution or rework?
 
