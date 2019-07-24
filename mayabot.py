@@ -14,28 +14,33 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import urllib.request
-import os
+import os, shutil
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 print(os.path.dirname(os.path.realpath(__file__)))
 
 def main(started):
-    username = 'mayabot'  # The user this bot will be stalking
+    username = 'mayaxs'  # The user this bot will be stalking
     # create necessary files on first run
     if started == 0:
         p = open("used_ids.txt", "w+")
         p.truncate(0)
         p.close()
-        print('created or erased used_ids.txt')
+        print('Created or erased used_ids.txt')
         p = open("img_and_caption.txt", "w+")
         p.truncate(0)
         p.close()
-        print('created or erased img_and_caption.txt')
+        print('Created or erased img_and_caption.txt')
+
         # create directory for pics. All images/mp4s will be stored in this directory for processing
         try:
-            os.mkdir(dir_path + '/pics')
+            os.mkdir('pics')
+
         except:
-            print('Directory already exists')
+            shutil.rmtree("pics")
+            os.mkdir('pics')
+
+        print("Created pics folder")
 
     # Praw reddit instance
     r = praw.Reddit(client_id='1scCXWF6gu7Ecg',
@@ -72,7 +77,7 @@ def get_post_ids(user, r):
     used_ids_txt = open('used_ids.txt', 'a')
 
     # iterates through posts and decides on whether or not an action is neccesary.
-    for submission in user.submissions.new(limit=5):
+    for submission in user.submissions.new(limit=20):
         # time.sleep(5) #For use in final in case the rpi requests too often and is difficult to fix
 
         sub = str(submission.subreddit)
