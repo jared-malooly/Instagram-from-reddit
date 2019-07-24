@@ -6,7 +6,7 @@ WIP currently
 
 ===========
 
-# Required libraries:
+# Required libraries: (pip install ___)
 
 bs4
 
@@ -17,7 +17,9 @@ requests
 pillow
   --Uninstall PIL
 
-numpy??
+numpy?? not yet but I bet I'll need it further down the road
+
+opencv-python
 
 ===========
 ### TO DO:
