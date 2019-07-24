@@ -27,12 +27,48 @@ def process_image(post_caption):
         if len(files) > 10:
             print("u dummy I cant post this")
             files = []
+        for image in files:
+            img_or_vid = image.split(".")
+            if "mp4" in img_or_vid:
+                print("Mp4 found in gallery:", image)
+            elif "jpg" in img_or_vid:
+
+                try:
+                    image = Image.open("pics/" + post_caption[1])
+                    w, h = image.size
+
+                    print(w, h)
+
+                    if int(w) > int(h):
+                        print('Wide')
+
+                    elif int(w) < int(h):
+                        print('Tall')
+                    else:
+                        print('Square')
+                    time.sleep(5)
+                except:
+                    print("Couldn't find the image")
+
 
     try:
         image = Image.open("pics/" + post_caption[1])
-        image.show()
+        w, h = image.size
+
+        print(w, h)
+
+        if int(w) > int(h):
+            print('Wide')
+
+        elif int(w) < int(h):
+            print('Tall')
+        else:
+            print('Square')
+        time.sleep(5)
     except:
-        "Couldn't find the image"
+        print("Couldn't find the image")
+
+
 amount = 0
 while True:
     mayabot.run(amount)
