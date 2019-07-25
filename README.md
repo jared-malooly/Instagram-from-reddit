@@ -23,6 +23,14 @@ opencv-python
 
 InstagramAPI @ https://github.com/LevPasha/Instagram-API-python/tree/master/InstagramAPI
 
+# OR
+
+just cd to this directory and type:
+
+'''
+pip install -r requirements.txt
+'''
+
 ===========
 ### TO DO:
 
