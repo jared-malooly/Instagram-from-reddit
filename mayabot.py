@@ -29,7 +29,7 @@ print("               __/ | By Jared Malooly")
 print("              |___/                   ")
 
 def main(started):
-    username = 'gallowboob'  # The user this bot will be stalking
+    username = ''  # The user this bot will be stalking
     # create necessary files on first run
     if started == 0:
         p = open("used_ids.txt", "w+")
@@ -51,10 +51,10 @@ def main(started):
 
 
     # Praw reddit instance
-    r = praw.Reddit(client_id='1scCXWF6gu7Ecg',
-                    client_secret='BcRWHiN-UXTagFSlvjgm6m_zQMg',
-                    username='Mayabot',
-                    password='MayabotPassword',
+    r = praw.Reddit(client_id='',
+                    client_secret='',
+                    username='',
+                    password='',
                     user_agent='mayabotV1')
 
     user = r.redditor(username)
