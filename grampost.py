@@ -4,8 +4,8 @@ import cv2
 
 def main():
 
-    username = 'fluft_boys'
-    password = 'WhySoRude'
+    username = ''
+    password = ''
     InstagramAPI = ig.InstagramAPI(username, password)
     instructions = open("img_and_caption.txt", 'r')
 
