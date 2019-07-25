@@ -236,7 +236,7 @@ def random_pastel(mode):
     if len(mode) == 4:
         return availible_pastels[random.randint(0, len(availible_pastels) - 1)]
 
-amount = 0
+amount = 1
 while True:
     mayabot.run(amount)
     amount += 1
