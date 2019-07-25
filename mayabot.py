@@ -54,7 +54,7 @@ def main(started):
     r = praw.Reddit(client_id='1scCXWF6gu7Ecg',
                     client_secret='BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username='Mayabot',
-                    password='Samsung88',
+                    password='MayabotPassword',
                     user_agent='mayabotV1')
 
     user = r.redditor(username)
