@@ -19,34 +19,42 @@ import os, shutil
 dir_path = os.path.dirname(os.path.realpath(__file__))
 print(os.path.dirname(os.path.realpath(__file__)))
 
+print(" __  __                   _____       _")
+print("|  \\/  |                 | ___ \\     | |  ")
+print("| .  . | __ _ _   _  __ _| |_/ / ___ | |_ ")
+print("| |\/| |/ _` | | | |/ _` | ___ \/ _ \| __|")
+print("| |  | | (_| | |_| | (_| | |_/ / (_) | |_ ")
+print("\\_|  |_/\__,_|\__, |\__,_\____/ \___/ \__|")
+print("               __/ | By Jared Malooly")
+print("              |___/                   ")
+
 def main(started):
-    username = 'mayaxs'  # The user this bot will be stalking
+    username = 'gallowboob'  # The user this bot will be stalking
     # create necessary files on first run
     if started == 0:
         p = open("used_ids.txt", "w+")
         p.truncate(0)
         p.close()
         print('Created or erased used_ids.txt')
-        p = open("img_and_caption.txt", "w+")
-        p.truncate(0)
-        p.close()
-        print('Created or erased img_and_caption.txt')
+    p = open("img_and_caption.txt", "w+")
+    p.truncate(0)
+    p.close()
+    print('Created or erased img_and_caption.txt')
 
         # create directory for pics. All images/mp4s will be stored in this directory for processing
-        try:
-            os.mkdir('pics')
+    try:
+        os.mkdir('pics')
 
-        except:
-            shutil.rmtree("pics")
-            os.mkdir('pics')
+    except:
+        shutil.rmtree("pics")
+        os.mkdir('pics')
 
-        print("Created pics folder")
 
     # Praw reddit instance
     r = praw.Reddit(client_id='1scCXWF6gu7Ecg',
                     client_secret='BcRWHiN-UXTagFSlvjgm6m_zQMg',
                     username='Mayabot',
-                    password='CoolPasswordDude',
+                    password='Samsung88',
                     user_agent='mayabotV1')
 
     user = r.redditor(username)
@@ -77,7 +85,7 @@ def get_post_ids(user, r):
     used_ids_txt = open('used_ids.txt', 'a')
 
     # iterates through posts and decides on whether or not an action is neccesary.
-    for submission in user.submissions.new(limit=20):
+    for submission in user.submissions.new(limit=100):
         # time.sleep(5) #For use in final in case the rpi requests too often and is difficult to fix
 
         sub = str(submission.subreddit)
@@ -371,4 +379,4 @@ def run(started):
     started += 1
 
 # Wont be here in final product, only using this to debug
-# run(0)
+#run(0)
