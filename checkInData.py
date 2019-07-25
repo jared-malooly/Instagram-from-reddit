@@ -6,7 +6,7 @@
 
 
 import mayabot
-#import grampost
+import grampost
 import time
 import glob, os
 from PIL import Image
@@ -210,9 +210,12 @@ while True:
         post_caption = line.rstrip().split(" | ")
         process_image(post_caption)
 
+    check_images = []
+    check_images = directory.readlines()
+    if check_images != []:
+        grampost.run()
     # Clear img_and_caption for next set of instructions
     directory.truncate(0)
     print('Cleared instruction sheet.')
     directory.close()
-    #grampost.run()
-    time.sleep(100)
+    time.sleep(60)
