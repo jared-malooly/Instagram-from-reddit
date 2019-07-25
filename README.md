@@ -21,6 +21,8 @@ numpy?? not yet but I bet I'll need it further down the road
 
 opencv-python
 
+InstagramAPI @ https://github.com/LevPasha/Instagram-API-python/tree/master/InstagramAPI
+
 ===========
 ### TO DO:
 
@@ -42,6 +44,8 @@ opencv-python
 
 ~~Better storage solution or rework?~~
 
-instagram
+~~instagram~~
 
-automation on pi
+~~automation on pi~~
+
+bugs
