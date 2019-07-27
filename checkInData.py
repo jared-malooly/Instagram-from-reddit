@@ -5,7 +5,7 @@
 ###
 
 
-import mayabot
+import download_posts
 import grampost
 import time
 import glob, os
@@ -236,9 +236,9 @@ def random_pastel(mode):
     if len(mode) == 4:
         return availible_pastels[random.randint(0, len(availible_pastels) - 1)]
 
-amount = 1
+amount = 0
 while True:
-    mayabot.run(amount)
+    download_posts.run(amount)
     amount += 1
     directory = open("img_and_caption.txt", "r+")
     test_for_new = []
@@ -256,4 +256,4 @@ while True:
     directory.truncate(0)
     print('Cleared instruction sheet.')
     directory.close()
-    time.sleep(60)
+    time.sleep(100)

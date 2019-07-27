@@ -1,6 +1,7 @@
 import InstagramAPI as ig
 import time
 import cv2
+import random
 
 def main():
 
@@ -48,7 +49,7 @@ def main():
             print("Something went wrong with posting the image")
 
         InstagramAPI.logout()
-        time.sleep(30)
+        time.sleep(random.randint(30, 100))
 
 def get_thumbnail(directory, file):
     vidcap = cv2.VideoCapture(directory)
