@@ -1,7 +1,5 @@
 
-===========
-NEW: 2021 - Revisiting this project/cleaning up code
-===========
+NEW: 2021 - Revisiting this project/cleaning up code now that I know about runtime complexity
 
 
 Reposts picture and caption of reddit post to instagram.
