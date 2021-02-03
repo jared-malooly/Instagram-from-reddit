@@ -21,7 +21,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 print(" __  __  ____  __  __  ____  ____  _____  ____")
 print("(  \/  )( ___)(  \/  )( ___)(  _ \(  _  )(_  _)")
-print(" )    (  )__)  )    (  )__)  ) _ < )(_)(   )(")
+print(" )    (  )__)  )    (  )__)  ) _ < )(_)(   )(")          #cool
 print("(_/\/\_)(____)(_/\/\_)(____)(____/(_____) (__)")
 print("             By Jared Malooly\n\n")
 
@@ -136,7 +136,7 @@ def get_post_ids(user, r):
             end = time.time()
             print("{:.2f}".format(end - start) + " seconds to download https://reddit.com/" + new_posts[key][1])
         except:
-            print('Fucky shit went on here. Either the file was not supported and still attempted')
+            print('**** **** went on here. Either the file was not supported and still attempted')
             print('to go through, or the file is undownloadable through some sort of lock..')
             print("\nI'll just ignore it.\n")
     print('Done!')
