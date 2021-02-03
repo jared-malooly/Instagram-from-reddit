@@ -1,7 +1,7 @@
 ###
 ### By Jared Malooly
 ### Uses img_and_caption file to get image and caption data and send it to instagram posting script, then clears it.
-### Also, more importantly, resizes the images and videos so that instagram can actually post them.
+### Also, more importantly, resizes the images and videos* so that instagram can actually post them.
 ###
 
 
@@ -79,7 +79,8 @@ def process_image(post_caption):
     elif "mp4" in type:
         try:
             pass
-            # process_video("pics/" + post_caption[1], post_caption[1].rstrip(".mp4")) UNTIL I LEARN HOW TO PROPERLY ENCODE THIS
+            # process_video("pics/" + post_caption[1], post_caption[1].rstrip(".mp4")) 
+            # Pass for now, I cant get a good library to encode mp4
         except Exception as e:
             print(e)
 
@@ -100,7 +101,7 @@ def process_video(video_directory, folder_name):
     try:
         os.mkdir("pics/" + folder_name)
     except:
-        print("Folder already exists dummy")
+        print("Folder already exists")
 
     frames = []
     count = 0
