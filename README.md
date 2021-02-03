@@ -1,10 +1,12 @@
+
+===========
+NEW: 2021 - Revisiting this project/cleaning up code
+===========
+
+
 Reposts picture and caption of reddit post to instagram.
 
 This will be running on my Rpi at a certain time every day.
-
-WIP currently
-
-===========
 
 # Required libraries: (pip install ___)
 
